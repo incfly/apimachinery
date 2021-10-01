@@ -18,6 +18,7 @@ package protobuf
 
 import (
 	"bytes"
+  "runtime/debug"
 	"fmt"
 	"io"
 	"net/http"
@@ -61,7 +62,6 @@ func (e errNotMarshalable) Status() metav1.Status {
 	}
 }
 
-// IsNotMarshalable checks the type of error, returns a boolean true if error is not nil and not marshalable false otherwise
 func IsNotMarshalable(err error) bool {
 	_, ok := err.(errNotMarshalable)
 	return err != nil && ok
@@ -78,7 +78,6 @@ func NewSerializer(creater runtime.ObjectCreater, typer runtime.ObjectTyper) *Se
 	}
 }
 
-// Serializer handles encoding versioned objects into the proper wire form
 type Serializer struct {
 	prefix  []byte
 	creater runtime.ObjectCreater
@@ -171,6 +170,8 @@ func (s *Serializer) Encode(obj runtime.Object, w io.Writer) error {
 }
 
 func (s *Serializer) doEncode(obj runtime.Object, w io.Writer) error {
+	fmt.Println("jianfeih k8s doEncode invoked")
+	debug.PrintStack()
 	prefixSize := uint64(len(s.prefix))
 
 	var unk runtime.Unknown
@@ -184,6 +185,7 @@ func (s *Serializer) doEncode(obj runtime.Object, w io.Writer) error {
 		}
 		copy(data, s.prefix)
 		_, err = w.Write(data[:prefixSize+uint64(i)])
+    fmt.Printf("jianfeih k8s-4 weird-1, obj %+v", obj)
 		return err
 	default:
 		kind := obj.GetObjectKind().GroupVersionKind()
@@ -215,6 +217,7 @@ func (s *Serializer) doEncode(obj runtime.Object, w io.Writer) error {
 
 	case proto.Marshaler:
 		// this path performs extra allocations
+    fmt.Printf("jianfeih k8s-4 weird-2, obj %+v", obj)
 		data, err := t.Marshal()
 		if err != nil {
 			return err
@@ -467,10 +470,8 @@ func (s *RawSerializer) Identifier() runtime.Identifier {
 	return rawSerializerIdentifier
 }
 
-// LengthDelimitedFramer is exported variable of type lengthDelimitedFramer
 var LengthDelimitedFramer = lengthDelimitedFramer{}
 
-// Provides length delimited frame reader and writer methods
 type lengthDelimitedFramer struct{}
 
 // NewFrameWriter implements stream framing for this serializer
