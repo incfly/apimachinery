@@ -132,6 +132,7 @@ func (s *Serializer) Decode(originalData []byte, gvk *schema.GroupVersionKind, i
 		case runtime.IsNotRegisteredError(err):
 			pb, ok := into.(proto.Message)
 			if !ok {
+        fmt.Printf("jianfeih k8s-3, obj %+v", into)
 				return nil, &actual, errNotMarshalable{reflect.TypeOf(into)}
 			}
 			if err := proto.Unmarshal(unk.Raw, pb); err != nil {
@@ -235,6 +236,7 @@ func (s *Serializer) doEncode(obj runtime.Object, w io.Writer) error {
 
 	default:
 		// TODO: marshal with a different content type and serializer (JSON for third party objects)
+    fmt.Printf("jianfeih k8s-4, obj %+v", obj)
 		return errNotMarshalable{reflect.TypeOf(obj)}
 	}
 }
@@ -355,6 +357,10 @@ func (s *RawSerializer) Decode(originalData []byte, gvk *schema.GroupVersionKind
 	case runtime.IsNotRegisteredError(err):
 		pb, ok := into.(proto.Message)
 		if !ok {
+		  fmt.Printf("jianfeih dbg k8s, obj %+v, %v", into, gvk)
+			if gvk != nil {
+		    fmt.Printf("jianfeih dbg k8s, gvk %+v", *gvk)
+			}
 			return nil, actual, errNotMarshalable{reflect.TypeOf(into)}
 		}
 		if err := proto.Unmarshal(data, pb); err != nil {
@@ -393,6 +399,7 @@ func unmarshalToObject(typer runtime.ObjectTyper, creater runtime.ObjectCreater,
 
 	pb, ok := obj.(proto.Message)
 	if !ok {
+		fmt.Printf("jianfeih dbg k8s-1, obj %+v", obj)
 		return nil, actual, errNotMarshalable{reflect.TypeOf(obj)}
 	}
 	if err := proto.Unmarshal(data, pb); err != nil {
@@ -450,6 +457,7 @@ func (s *RawSerializer) doEncode(obj runtime.Object, w io.Writer) error {
 		return err
 
 	default:
+		fmt.Printf("jianfeih dbg k8s-2, obj %+v", obj)
 		return errNotMarshalable{reflect.TypeOf(obj)}
 	}
 }
